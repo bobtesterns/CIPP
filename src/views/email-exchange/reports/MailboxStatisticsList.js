@@ -1,20 +1,40 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
-import { cellBooleanFormatter } from 'src/components/tables'
+import { CellTip, cellBooleanFormatter } from 'src/components/tables'
 import { CippPageList } from 'src/components/layout'
+
+const conditionalRowStyles = [
+  {
+    when: (row) => (row.UsedGB / row.QuotaGB) * 100 > 80 && (row.UsedGB / row.QuotaGB) * 100 < 90,
+    classNames: ['mbusage-warning'],
+  },
+  {
+    when: (row) => (row.UsedGB / row.QuotaGB) * 100 > 90 && (row.UsedGB / row.QuotaGB) * 100 < 100,
+    classNames: ['mbusage-danger'],
+  },
+]
 
 const columns = [
   {
     selector: (row) => row['UPN'],
     name: 'User Prinicipal Name',
     sortable: true,
+    cell: (row) => CellTip(row['UPN']),
     exportSelector: 'UPN',
+    minWidth: '200px',
   },
   {
     selector: (row) => row['displayName'],
     name: 'Display Name',
     sortable: true,
+    cell: (row) => CellTip(row['displayName']),
     exportSelector: 'displayName',
+  },
+  {
+    selector: (row) => row['MailboxType'],
+    name: 'Mailbox Type',
+    sortable: true,
+    exportSelector: 'MailboxType',
   },
   {
     selector: (row) => row['LastActive'],
@@ -44,7 +64,7 @@ const columns = [
     selector: (row) => row['HasArchive'],
     name: 'Archiving Enabled',
     sortable: true,
-    cell: cellBooleanFormatter(),
+    cell: cellBooleanFormatter({ colourless: true }),
     exportSelector: 'HasArchive',
   },
 ]
@@ -61,6 +81,9 @@ const MailboxStatsList = () => {
         path: '/api/ListMailboxStatistics',
         columns,
         params: { TenantFilter: tenant?.defaultDomainName },
+        tableProps: {
+          conditionalRowStyles: conditionalRowStyles,
+        },
       }}
     />
   )
